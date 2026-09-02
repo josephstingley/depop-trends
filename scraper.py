@@ -68,15 +68,13 @@ from playwright.sync_api import sync_playwright, Page
 # looking up a brand we already suspect is trending. Category slugs below
 # are best-guess based on Depop's typical nav structure; confirm/adjust
 # against the live site (View Source / devtools network tab) with --debug.
+# Only 3 real top-level categories exist on Depop (confirmed via live nav
+# inspection on 2026-09-02) — earlier guesses like "streetwear"/"denim"/etc.
+# were not real category slugs and silently returned nothing.
 DEFAULT_CATEGORIES = [
     "womens",
     "mens",
-    "kidswear",
-    "vintage",
-    "streetwear",
-    "denim",
-    "accessories",
-    "footwear",
+    "kids",
 ]
 
 DEPOP_CATEGORY_URL = "https://www.depop.com/category/{category}/?sold=true"
@@ -270,8 +268,31 @@ def scrape_category(
     max_items_per_category: int,
     seed_brands: list[str],
     debug: bool = False,
+    capture_network: bool = False,
 ) -> list[Listing]:
     url = DEPOP_CATEGORY_URL.format(category=category)
+
+    captured_calls = []
+    if capture_network:
+        def on_response(response):
+            try:
+                ct = response.headers.get("content-type", "")
+                url_l = response.url.lower()
+                # Heuristic: anything that looks like a data API call rather
+                # than a static asset (JS/CSS/image/font).
+                if "json" in ct or any(k in url_l for k in ("/api/", "webapi", "graphql")):
+                    entry = {"url": response.url, "status": response.status, "content_type": ct}
+                    if "json" in ct:
+                        try:
+                            body = response.text()
+                            entry["body_preview"] = body[:4000]
+                        except Exception:
+                            pass
+                    captured_calls.append(entry)
+            except Exception:
+                pass
+        page.on("response", on_response)
+
     page.goto(url, wait_until="networkidle", timeout=30000)
     time.sleep(2)  # let any lazy-loaded content settle
 
@@ -290,6 +311,10 @@ def scrape_category(
         prev_count = current_count
         page.mouse.wheel(0, 4000)
         time.sleep(1.5)
+
+    if capture_network:
+        Path(f"network_{category}.json").write_text(json.dumps(captured_calls, indent=2))
+        print(f"  [debug] captured {len(captured_calls)} api-like responses for '{category}'")
 
     structured = extract_from_next_data(page)
     if structured:
@@ -316,6 +341,7 @@ def crawl_sold_listings(
     max_items_per_category: int = 60,
     seed_brands: Optional[list[str]] = None,
     debug: bool = False,
+    capture_network: bool = False,
     delay_between_categories: float = 3.0,
 ) -> list[Listing]:
     """Crawl sold listings across multiple general categories — this is the
@@ -336,7 +362,8 @@ def crawl_sold_listings(
         for category in categories:
             try:
                 listings = scrape_category(
-                    page, category, max_items_per_category, seed_brands, debug=debug
+                    page, category, max_items_per_category, seed_brands,
+                    debug=debug, capture_network=capture_network,
                 )
                 print(f"  {category}: {len(listings)} listings ({sum(1 for l in listings if l.brand)} with a brand match)")
                 all_listings.extend(listings)
@@ -380,7 +407,7 @@ def main():
         default=DEFAULT_CATEGORIES,
         help="Depop category slugs to crawl (default: a broad general set)",
     )
-    parser.add_argument("--max-items-per-category", type=int, default=60)
+    parser.add_argument("--max-items-per-category", type=int, default=500)
     parser.add_argument("--top-n", type=int, default=15)
     parser.add_argument("--out", default="sold_trends.json")
     parser.add_argument(
@@ -389,6 +416,11 @@ def main():
         help="If set, also saves a timestamped copy here (e.g. history/2026-08-31.json) for day-over-day trend tracking",
     )
     parser.add_argument("--debug", action="store_true", help="Save raw page HTML per category for selector debugging")
+    parser.add_argument(
+        "--capture-network",
+        action="store_true",
+        help="Log API-like network responses per category to network_<category>.json, to find the real pagination/data endpoint",
+    )
     args = parser.parse_args()
 
     print(f"Crawling {len(args.categories)} categories...")
@@ -396,6 +428,7 @@ def main():
         args.categories,
         max_items_per_category=args.max_items_per_category,
         debug=args.debug,
+        capture_network=args.capture_network,
     )
     print(f"Total listings scraped: {len(listings)}")
 
