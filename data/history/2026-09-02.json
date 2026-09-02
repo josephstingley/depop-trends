@@ -1,5 +1,233 @@
 {
-  "generated_at": "2026-09-02T01:27:20.900031+00:00",
-  "leaderboard": [],
-  "listings_by_brand": {}
+  "generated_at": "2026-09-02T01:35:54.431169+00:00",
+  "leaderboard": [
+    {
+      "brand": "SHEIN",
+      "sales_count": 4
+    },
+    {
+      "brand": "American Eagle",
+      "sales_count": 3
+    },
+    {
+      "brand": "Under Armour",
+      "sales_count": 1
+    },
+    {
+      "brand": "PrettyLittleThing",
+      "sales_count": 1
+    },
+    {
+      "brand": "Urban Outfitters",
+      "sales_count": 1
+    },
+    {
+      "brand": "Juicy Couture",
+      "sales_count": 1
+    },
+    {
+      "brand": "Target",
+      "sales_count": 1
+    },
+    {
+      "brand": "RSQ",
+      "sales_count": 1
+    },
+    {
+      "brand": "Princess Polly",
+      "sales_count": 1
+    },
+    {
+      "brand": "francesca's",
+      "sales_count": 1
+    },
+    {
+      "brand": "Off-White",
+      "sales_count": 1
+    }
+  ],
+  "listings_by_brand": {
+    "SHEIN": [
+      {
+        "brand": "SHEIN",
+        "title": "Shein women's cream and white top",
+        "price": 4.9,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/r1/234879789/4195918620_4542b8c7e3564878966203f2a9348e56/P0.jpg",
+        "listing_url": "https://www.depop.com/products/jni8si_n-butter-yellow-strapless-top-with-fbe5/",
+        "category": "womens",
+        "sold": true
+      },
+      {
+        "brand": "SHEIN",
+        "title": "Shein women's black joggers tracksuits",
+        "price": 4.9,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/r1/316990857/4142533473_c47e23102dba4740994a342686c204f3/P0.jpg",
+        "listing_url": "https://www.depop.com/products/kmischelex-black-cargo-sweatpants-with-drawstring-0459/",
+        "category": "womens",
+        "sold": true
+      },
+      {
+        "brand": "SHEIN",
+        "title": "Shein women's white dress",
+        "price": 9.1,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/r1/376453988/4019888826_efe505e6f5d248a0a46aa57d3e7cd52c/P0.jpg",
+        "listing_url": "https://www.depop.com/products/xhzniguri-white-mini-dress-with-ruffles-1398/",
+        "category": "womens",
+        "sold": true
+      },
+      {
+        "brand": "SHEIN",
+        "title": "Shein women's cream and white streetwear casual minimalist crop top",
+        "price": 7.0,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/r1/423873597/repop_15466571_3968358741/4286908940_79f45d4058854ecd9049e577c4c1ce8e/P0.jpg",
+        "listing_url": "https://www.depop.com/products/ebadlesse-butter-cream-one-shoulder-top-04f2/",
+        "category": "womens",
+        "sold": true
+      }
+    ],
+    "American Eagle": [
+      {
+        "brand": "American Eagle",
+        "title": "American eagle women's multi colour jumper",
+        "price": 5.95,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/b1/211762612/4195963368_e5168d599c61422ea4a9bead12933e8b/P0.jpg",
+        "listing_url": "https://www.depop.com/products/potterblew-multi-colored-striped-sweater-with-geometric-2afa/",
+        "category": "womens",
+        "sold": true
+      },
+      {
+        "brand": "American Eagle",
+        "title": "American eagle women's white and cream shirt",
+        "price": 5.95,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/b1/422762214/4181741561_bd46b4f4519241519eeffad7ac2ec4b7/P0.jpg",
+        "listing_url": "https://www.depop.com/products/rbe0202-american-eagle-white-long-sleeve-9725/",
+        "category": "womens",
+        "sold": true
+      },
+      {
+        "brand": "American Eagle",
+        "title": "American eagle women's blue and navy jeans",
+        "price": 3.85,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/r1/357448218/4195955175_16a74634f13149629ca9c4066a37b586/P0.jpg",
+        "listing_url": "https://www.depop.com/products/yore_22-american-eagle-outfitters-blue-skinny-fc4a/",
+        "category": "womens",
+        "sold": true
+      }
+    ],
+    "Under Armour": [
+      {
+        "brand": "Under Armour",
+        "title": "Under armour women's grey and white shorts",
+        "price": 9.1,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/b1/37518191/3669070871_f0709c8f8d714b7ba16edc9dd6a68dc3/P0.jpg",
+        "listing_url": "https://www.depop.com/products/mariah9nnichole-under-armour-grey-shorts-athletic-b143/",
+        "category": "womens",
+        "sold": true
+      }
+    ],
+    "PrettyLittleThing": [
+      {
+        "brand": "PrettyLittleThing",
+        "title": "Prettylittlething women's green crop top",
+        "price": 8.05,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/r1/388326907/4113948375_8087eef97b384e84bfe23829a8e38ffe/P0.jpg",
+        "listing_url": "https://www.depop.com/products/prxtty_clutz-prettylittlething-green-ribbed-knit-crop-6faf/",
+        "category": "womens",
+        "sold": true
+      }
+    ],
+    "Urban Outfitters": [
+      {
+        "brand": "Urban Outfitters",
+        "title": "Urban outfitters women's tan and brown jacket",
+        "price": 17.5,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/b1/263791733/3862609230_de741ccd4df84756a7c4bcee6423fd92/P0.jpg",
+        "listing_url": "https://www.depop.com/products/eazymonedg-urban-outfitters-brown-faux-fur-b393/",
+        "category": "womens",
+        "sold": true
+      }
+    ],
+    "Juicy Couture": [
+      {
+        "brand": "Juicy Couture",
+        "title": "Juicy couture women's red shirt",
+        "price": 5.95,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/b1/46553303/4003711619_60b5913b4f2e4c9b8c71641940eb73fb/P0.jpg",
+        "listing_url": "https://www.depop.com/products/peachz13-juicy-couture-red-velvet-top-d0c1/",
+        "category": "womens",
+        "sold": true
+      }
+    ],
+    "Target": [
+      {
+        "brand": "Target",
+        "title": "Target women's green and blue crop top",
+        "price": 4.9,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/b1/325814749/4080490757_c49a6c16ed6949d792c61fa6c277b65e/P0.jpg",
+        "listing_url": "https://www.depop.com/products/lily_lebarvn17-target-too-size-medium-worn-7d28/",
+        "category": "womens",
+        "sold": true
+      }
+    ],
+    "RSQ": [
+      {
+        "brand": "RSQ",
+        "title": "Rsq women's cream and brown punk y2_k grunge trousers",
+        "price": 16.45,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/b1/362661087/4184907085_7ec22355d5084434b0c706c6e0820601/P0.jpg",
+        "listing_url": "https://www.depop.com/products/ozlex-rsq-brown-and-beige-zebra-0c65/",
+        "category": "womens",
+        "sold": true
+      }
+    ],
+    "Princess Polly": [
+      {
+        "brand": "Princess Polly",
+        "title": "Princess polly women's red dress",
+        "price": 8.05,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/r1/29340333/3823189256_860c6e20def84074892a833aed2164cb/P0.jpg",
+        "listing_url": "https://www.depop.com/products/maivesquier-princess-polly-red-long-sleeve-ebf8/",
+        "category": "womens",
+        "sold": true
+      }
+    ],
+    "francesca's": [
+      {
+        "brand": "francesca's",
+        "title": "Francesca's women's white dress",
+        "price": 15.61,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/b1/221748146/4185466183_303b41041ba647e881998b25b0959170/P0.jpg",
+        "listing_url": "https://www.depop.com/products/averianamcloset-white-ruffle-dress-with-bow-1209/",
+        "category": "womens",
+        "sold": true
+      }
+    ],
+    "Off-White": [
+      {
+        "brand": "Off-White",
+        "title": "Off-white women's white and cream blouse",
+        "price": 5.95,
+        "currency": "USD",
+        "image_url": "https://media-photos.depop.com/b1/49176753/4085897793_12637d23b5574aca9ab8c7c6b6267d58/P0.jpg",
+        "listing_url": "https://www.depop.com/products/heryfurg-off-white-babydoll-blouse-with-small-7731/",
+        "category": "womens",
+        "sold": true
+      }
+    ]
+  }
 }
