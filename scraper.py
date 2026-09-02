@@ -161,55 +161,88 @@ def extract_from_next_data(page: Page) -> Optional[list[dict]]:
     return None  # placeholder until the real path is confirmed
 
 
+GENERIC_BRAND_LABELS = {"other", "no brand", "unbranded", "n/a", ""}
+
+
 def extract_from_dom(page: Page, category: str, seed_brands: list[str]) -> list[Listing]:
-    """Fallback: scrape listing cards directly from the rendered DOM.
-    Selectors below are best-guess placeholders — confirm/fix against the
-    live site with devtools (--debug dumps the raw HTML for this)."""
+    """Scrape listing cards from the rendered DOM using Depop's real markup
+    (confirmed from a live debug capture on 2026-09-02). Depop doesn't use
+    data-testid attributes on cards, but each card DOES print a plain-text
+    brand name, which is far more reliable than guessing from the title.
+
+    Real structure found:
+      <li class="...listItem">
+        <a class="...unstyledLink" href="/products/..." aria-label="Brand's ... description">
+          <img class="..._mainImage_..." src="...">
+        </a>
+        <p class="...brandName">SHEIN</p>
+        <p class="...sizeAttributeText">XL</p>
+        <p class="...price" aria-description="Price">$4.90</p>
+      </li>
+
+    CSS module class names have a hashed prefix that may change between
+    Depop deployments (e.g. "styles-module__DwMxCG__brandName") — matching
+    on the stable suffix via [class*="..."] is more resilient than an
+    exact class match.
+    """
     listings: list[Listing] = []
 
-    cards = page.locator('[data-testid="product-card"]')
+    cards = page.locator('li[class*="listItem"]')
     count = cards.count()
 
     for i in range(count):
         card = cards.nth(i)
 
+        link = card.locator('a[class*="unstyledLink"]').first
+        aria_label = ""
+        listing_url = None
         try:
-            title = card.locator('[data-testid="product-title"]').inner_text(timeout=1000)
+            aria_label = link.get_attribute("aria-label", timeout=1000) or ""
+            href = link.get_attribute("href", timeout=1000)
+            if href:
+                listing_url = href if href.startswith("http") else f"https://www.depop.com{href}"
         except Exception:
-            title = card.get_attribute("aria-label") or ""
-        title = (title or "").strip()
+            pass
+
+        brand = None
+        try:
+            brand_text = card.locator('p[class*="brandName"]').first.inner_text(timeout=1000).strip()
+            if brand_text and brand_text.lower() not in GENERIC_BRAND_LABELS:
+                brand = brand_text
+        except Exception:
+            pass
+        if not brand:
+            # Fallback: some listings have no brand tag set by the seller.
+            # Try matching the aria-label text against the seed list instead
+            # of leaving it fully unattributed.
+            brand = guess_brand_from_title(aria_label, seed_brands)
 
         price_text = ""
         try:
-            price_text = card.locator('[data-testid="product-price"]').inner_text(timeout=1000)
+            price_text = card.locator('p[class*="__price"]').first.inner_text(timeout=1000)
         except Exception:
             pass
         price, currency = parse_price(price_text)
 
         image_url = None
         try:
-            image_url = card.locator("img").first.get_attribute("src")
+            image_url = card.locator('img[class*="_mainImage_"]').first.get_attribute("src", timeout=1000)
         except Exception:
-            pass
-
-        listing_url = None
-        try:
-            href = card.locator("a").first.get_attribute("href")
-            if href:
-                listing_url = href if href.startswith("http") else f"https://www.depop.com{href}"
-        except Exception:
-            pass
+            try:
+                image_url = card.locator("img").first.get_attribute("src", timeout=1000)
+            except Exception:
+                pass
 
         listings.append(
             Listing(
-                brand=guess_brand_from_title(title, seed_brands),
-                title=title or None,
+                brand=brand,
+                title=aria_label or None,
                 price=price,
                 currency=currency,
                 image_url=image_url,
                 listing_url=listing_url,
                 category=category,
-                sold=True,  # page was filtered to sold=true
+                sold=True,  # page was requested with the sold=true param
             )
         )
 
@@ -249,7 +282,7 @@ def scrape_category(
     # Scroll to trigger infinite-scroll loading until we have enough items
     # or stop seeing new content appear.
     prev_count = -1
-    cards = page.locator('[data-testid="product-card"]')
+    cards = page.locator('li[class*="listItem"]')
     for _ in range(15):
         current_count = cards.count()
         if current_count >= max_items_per_category or current_count == prev_count:
