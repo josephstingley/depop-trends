@@ -28,12 +28,15 @@ jobs:
 
       - name: Run scraper
         run: |
-          python3 scraper.py --out docs/sold_trends.json --history-dir data/history
+          python3 scraper.py \
+            --out docs/sold_trends.json \
+            --history-dir data/history \
+            --debug
 
       - name: Commit updated results
         run: |
           git config user.name "depop-trends-bot"
           git config user.email "actions@github.com"
-          git add docs/sold_trends.json data/history
+          git add docs/sold_trends.json data/history debug_*.html
           git diff --cached --quiet && echo "No changes to commit" || git commit -m "Daily scrape update"
           git push
