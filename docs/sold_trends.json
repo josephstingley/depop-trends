@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-03T18:32:42.338771+00:00",
+  "generated_at": "2026-09-03T18:38:45.763696+00:00",
   "leaderboard": [
     {
       "brand": "American Eagle",
@@ -59,7 +59,7 @@
       {
         "brand": "American Eagle",
         "title": "American eagle women's blue and navy jeans",
-        "price": 3.85,
+        "price": 3.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/r1/357448218/4195955175_16a74634f13149629ca9c4066a37b586/P0.jpg",
         "listing_url": "https://www.depop.com/products/yore_22-american-eagle-outfitters-blue-skinny-fc4a/",
@@ -69,7 +69,7 @@
       {
         "brand": "American Eagle",
         "title": "American eagle women's blue jeans",
-        "price": 5.95,
+        "price": 5.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/r1/239656971/4184093272_9bd02c8ca88c435894f7dd98f2950ef7/P0.jpg",
         "listing_url": "https://www.depop.com/products/8lcbb-mom-straight-jeans-0-regular-5ad5/",
@@ -79,7 +79,7 @@
       {
         "brand": "American Eagle",
         "title": "American eagle women's white and cream shirt",
-        "price": 5.95,
+        "price": 5.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/b1/422762214/4181741561_bd46b4f4519241519eeffad7ac2ec4b7/P0.jpg",
         "listing_url": "https://www.depop.com/products/rbe0202-american-eagle-white-long-sleeve-9725/",
@@ -91,7 +91,7 @@
       {
         "brand": "SHEIN",
         "title": "Shein women's cream and white top",
-        "price": 4.9,
+        "price": 4.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/r1/234879789/4195918620_4542b8c7e3564878966203f2a9348e56/P0.jpg",
         "listing_url": "https://www.depop.com/products/jni8si_n-butter-yellow-strapless-top-with-fbe5/",
@@ -101,7 +101,7 @@
       {
         "brand": "SHEIN",
         "title": "Shein women's cream and white streetwear casual minimalist crop top",
-        "price": 7.0,
+        "price": 6.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/r1/423873597/repop_15466571_3968358741/4286908940_79f45d4058854ecd9049e577c4c1ce8e/P0.jpg",
         "listing_url": "https://www.depop.com/products/ebadlesse-butter-cream-one-shoulder-top-04f2/",
@@ -113,7 +113,7 @@
       {
         "brand": "Under Armour",
         "title": "Under armour women's grey and white shorts",
-        "price": 9.1,
+        "price": 8.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/b1/37518191/3669070871_f0709c8f8d714b7ba16edc9dd6a68dc3/P0.jpg",
         "listing_url": "https://www.depop.com/products/mariah9nnichole-under-armour-grey-shorts-athletic-b143/",
@@ -125,7 +125,7 @@
       {
         "brand": "Urban Outfitters",
         "title": "Urban outfitters women's tan and brown jacket",
-        "price": 17.5,
+        "price": 16.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/b1/263791733/3862609230_de741ccd4df84756a7c4bcee6423fd92/P0.jpg",
         "listing_url": "https://www.depop.com/products/eazymonedg-urban-outfitters-brown-faux-fur-b393/",
@@ -137,7 +137,7 @@
       {
         "brand": "PrettyLittleThing",
         "title": "Prettylittlething women's green crop top",
-        "price": 8.05,
+        "price": 7.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/r1/388326907/4113948375_8087eef97b384e84bfe23829a8e38ffe/P0.jpg",
         "listing_url": "https://www.depop.com/products/prxtty_clutz-prettylittlething-green-ribbed-knit-crop-6faf/",
@@ -149,7 +149,7 @@
       {
         "brand": "francesca's",
         "title": "Francesca's women's white dress",
-        "price": 15.61,
+        "price": 14.2,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/b1/221748146/4185466183_303b41041ba647e881998b25b0959170/P0.jpg",
         "listing_url": "https://www.depop.com/products/averianamcloset-white-ruffle-dress-with-bow-1209/",
@@ -161,7 +161,7 @@
       {
         "brand": "Juicy Couture",
         "title": "Juicy couture women's red shirt",
-        "price": 5.95,
+        "price": 5.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/b1/46553303/4003711619_60b5913b4f2e4c9b8c71641940eb73fb/P0.jpg",
         "listing_url": "https://www.depop.com/products/peachz13-juicy-couture-red-velvet-top-d0c1/",
@@ -173,7 +173,7 @@
       {
         "brand": "Abercrombie & Fitch",
         "title": "Abercrombie & fitch women's black blouse",
-        "price": 16.45,
+        "price": 15.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/r1/22060744/3827680043_e784e995f22047ec9ba02bb8e13f21d7/P0.jpg",
         "listing_url": "https://www.depop.com/products/e5ehler-sheer-abercrombie-black-top-82bf/",
@@ -185,7 +185,7 @@
       {
         "brand": "Princess Polly",
         "title": "Princess polly women's red dress",
-        "price": 8.05,
+        "price": 7.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/r1/29340333/3823189256_860c6e20def84074892a833aed2164cb/P0.jpg",
         "listing_url": "https://www.depop.com/products/maivesquier-princess-polly-red-long-sleeve-ebf8/",
@@ -197,7 +197,7 @@
       {
         "brand": "Target",
         "title": "Target women's green and blue crop top",
-        "price": 4.9,
+        "price": 4.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/b1/325814749/4080490757_c49a6c16ed6949d792c61fa6c277b65e/P0.jpg",
         "listing_url": "https://www.depop.com/products/lily_lebarvn17-target-too-size-medium-worn-7d28/",
@@ -209,7 +209,7 @@
       {
         "brand": "Silver Jeans",
         "title": "Silver jeans women's blue and navy jeans",
-        "price": 34.3,
+        "price": 32.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/b1/42973338/repop_44986954_3940035669/4116157185_036bdc58065e454d9aae62baf9f2a0cc/P0.jpg",
         "listing_url": "https://www.depop.com/products/kennapd-vintage-y2k-silver-light-wash-8171/",
@@ -221,7 +221,7 @@
       {
         "brand": "Victoria's Secret",
         "title": "Victoria's secret women's red and pink sweatshirt",
-        "price": 13.3,
+        "price": 12.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/b1/446321595/3999984755_906554eb57904642bc36c51c2c57dd0c/P0.jpg",
         "listing_url": "https://www.depop.com/products/lauriesan8409-victorias-secret-pink-quarter-zip-a567/",
@@ -233,7 +233,7 @@
       {
         "brand": "Brandy Melville",
         "title": "Brandy melville women's white and cream vest",
-        "price": 11.2,
+        "price": 10.0,
         "currency": "USD",
         "image_url": "https://media-photos.depop.com/r1/272007504/4019722574_6330a2c9191a49fea49d4e476df4ae37/P0.jpg",
         "listing_url": "https://www.depop.com/products/quinmkathryn_-brandy-melvile-tank-top-c228/",
