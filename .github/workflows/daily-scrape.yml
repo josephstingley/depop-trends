@@ -1,4 +1,4 @@
-name: Daily Depop Trends Scrape
+name: Daily Depop + eBay Trends Scrape
 
 on:
   schedule:
@@ -11,7 +11,8 @@ permissions:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
+
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
@@ -26,7 +27,7 @@ jobs:
           pip install playwright
           playwright install --with-deps chromium
 
-      - name: Run scraper
+      - name: Run Depop scraper
         run: |
           python3 scraper.py \
             --out docs/sold_trends.json \
@@ -34,10 +35,24 @@ jobs:
             --debug \
             --capture-network
 
+      - name: Run eBay scraper
+        run: |
+          python3 ebay_scraper.py
+
       - name: Commit updated results
         run: |
           git config user.name "depop-trends-bot"
           git config user.email "actions@github.com"
-          git add docs/sold_trends.json data/history debug_*.html network_*.json
-          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Daily scrape update"
+
+          git add \
+            docs/sold_trends.json \
+            data/history \
+            data/ebay_history \
+            debug_*.html \
+            network_*.json
+
+          git diff --cached --quiet && \
+            echo "No changes to commit" || \
+            git commit -m "Daily Depop + eBay scrape"
+
           git push
