@@ -8,10 +8,6 @@ from urllib.parse import quote_plus
 from playwright.async_api import async_playwright
 
 
-# -----------------------------
-# CONFIGURATION
-# -----------------------------
-
 SEARCH_QUERIES = [
     "Nike hoodie",
     "Nike sweatshirt",
@@ -20,20 +16,16 @@ SEARCH_QUERIES = [
     "Ralph Lauren sweater",
 ]
 
-RESULTS_PER_QUERY = 50
-
 OUTPUT_DIR = Path("data/ebay_history")
+DEBUG_DIR = Path("data/ebay_debug")
+
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+DEBUG_DIR.mkdir(parents=True, exist_ok=True)
 
-
-# -----------------------------
-# HELPERS
-# -----------------------------
 
 def clean_text(value):
     if not value:
         return None
-
     return re.sub(r"\s+", " ", value).strip()
 
 
@@ -52,121 +44,214 @@ def parse_price(value):
         return None
 
 
-# -----------------------------
-# SCRAPER
-# -----------------------------
-
 async def scrape_query(page, query):
     print(f"\nSearching eBay for: {query}")
 
-    # eBay Advanced Search:
-    # LH_Sold=1      -> sold items
-    # LH_Complete=1  -> completed items
-    # _sop=13       -> ending soonest / completed relevance
     url = (
         "https://www.ebay.com/sch/i.html"
         f"?_nkw={quote_plus(query)}"
         "&LH_Sold=1"
         "&LH_Complete=1"
         "&_sop=13"
+        "&_ipg=120"
     )
 
-    await page.goto(
-        url,
-        wait_until="domcontentloaded",
-        timeout=60000
-    )
+    try:
+        response = await page.goto(
+            url,
+            wait_until="domcontentloaded",
+            timeout=60000
+        )
 
-    await page.wait_for_timeout(3000)
+        await page.wait_for_timeout(5000)
 
-    # Scroll to encourage lazy-loaded results
-    for _ in range(3):
-        await page.mouse.wheel(0, 1200)
-        await page.wait_for_timeout(500)
+        print(f"HTTP status: {response.status if response else 'unknown'}")
+        print(f"Page title: {await page.title()}")
+        print(f"Final URL: {page.url}")
 
-    cards = await page.locator("li.s-item").all()
+        # Save the actual HTML eBay gave us.
+        safe_name = re.sub(
+            r"[^a-zA-Z0-9_-]",
+            "_",
+            query
+        )
 
-    results = []
+        html_file = DEBUG_DIR / f"{safe_name}.html"
 
-    for card in cards:
-        try:
-            title_el = card.locator(".s-item__title")
-            price_el = card.locator(".s-item__price")
-            link_el = card.locator("a.s-item__link")
+        html = await page.content()
 
-            title = clean_text(
-                await title_el.inner_text()
-            ) if await title_el.count() else None
+        html_file.write_text(
+            html,
+            encoding="utf-8"
+        )
 
-            price_text = clean_text(
-                await price_el.inner_text()
-            ) if await price_el.count() else None
+        print(f"Saved debug HTML: {html_file}")
 
-            link = (
-                await link_el.get_attribute("href")
-            ) if await link_el.count() else None
+        # Look for common eBay result selectors.
+        selectors = [
+            "li.s-item",
+            ".s-item",
+            "[data-testid='item-card']",
+            ".srp-results .s-item",
+            "ul.srp-results > li"
+        ]
 
-            # Ignore eBay's fake/placeholder first result
-            if not title or title.lower() in {
-                "shop on ebay",
-                "shop on ebay.com"
-            }:
-                continue
+        for selector in selectors:
+            count = await page.locator(selector).count()
+            print(
+                f"Selector {selector}: {count} elements"
+            )
 
-            # Extract item ID from URL
-            item_id = None
+        # Try the standard eBay result selector first.
+        cards = page.locator("li.s-item")
 
-            if link:
-                match = re.search(r"/itm/(\d+)", link)
+        count = await cards.count()
 
-                if match:
-                    item_id = match.group(1)
+        # Fallback selector.
+        if count == 0:
+            cards = page.locator(".s-item")
+            count = await cards.count()
 
-            # Try to find condition
-            condition = None
+        print(f"Using {count} result cards")
 
-            condition_el = card.locator(".SECONDARY_INFO")
+        results = []
 
-            if await condition_el.count():
-                condition = clean_text(
-                    await condition_el.first.inner_text()
+        for i in range(count):
+
+            try:
+                card = cards.nth(i)
+
+                title = None
+                price_text = None
+                link = None
+                condition = None
+
+                # Title
+                for selector in [
+                    ".s-item__title",
+                    "[role='heading']",
+                    "h3"
+                ]:
+                    locator = card.locator(selector)
+
+                    if await locator.count():
+                        title = clean_text(
+                            await locator.first.inner_text()
+                        )
+
+                        if title:
+                            break
+
+                # Price
+                for selector in [
+                    ".s-item__price",
+                    "[class*='price']"
+                ]:
+                    locator = card.locator(selector)
+
+                    if await locator.count():
+                        price_text = clean_text(
+                            await locator.first.inner_text()
+                        )
+
+                        if price_text:
+                            break
+
+                # Link
+                for selector in [
+                    "a.s-item__link",
+                    "a"
+                ]:
+                    locator = card.locator(selector)
+
+                    if await locator.count():
+                        link = await locator.first.get_attribute(
+                            "href"
+                        )
+
+                        if link:
+                            break
+
+                # Condition
+                for selector in [
+                    ".SECONDARY_INFO",
+                    ".s-item__subtitle"
+                ]:
+                    locator = card.locator(selector)
+
+                    if await locator.count():
+                        condition = clean_text(
+                            await locator.first.inner_text()
+                        )
+
+                        if condition:
+                            break
+
+                if not title:
+                    continue
+
+                if title.lower() in [
+                    "shop on ebay",
+                    "shop on ebay.com"
+                ]:
+                    continue
+
+                item_id = None
+
+                if link:
+                    match = re.search(
+                        r"/itm/(?:[^/]+/)?(\d+)",
+                        link
+                    )
+
+                    if match:
+                        item_id = match.group(1)
+
+                results.append({
+                    "item_id": item_id,
+                    "title": title,
+                    "price": parse_price(price_text),
+                    "price_raw": price_text,
+                    "condition": condition,
+                    "url": link,
+                    "query": query,
+                    "scraped_at": datetime.now(
+                        timezone.utc
+                    ).isoformat()
+                })
+
+            except Exception as e:
+                print(
+                    f"Error parsing result {i}: {e}"
                 )
 
-            results.append({
-                "item_id": item_id,
-                "title": title,
-                "price": parse_price(price_text),
-                "price_raw": price_text,
-                "condition": condition,
-                "url": link,
-                "query": query,
-                "scraped_at": datetime.now(
-                    timezone.utc
-                ).isoformat(),
-            })
+        # Remove duplicates.
+        unique = {}
 
-        except Exception as e:
-            print(f"Could not parse listing: {e}")
+        for item in results:
+            key = (
+                item["item_id"]
+                or item["url"]
+                or item["title"]
+            )
 
-    # Remove duplicates
-    unique = {}
-
-    for item in results:
-        key = item["item_id"] or item["url"] or item["title"]
-
-        if key:
             unique[key] = item
 
-    results = list(unique.values())
+        results = list(unique.values())
 
-    print(f"Found {len(results)} sold listings")
+        print(
+            f"Successfully extracted {len(results)} listings"
+        )
 
-    return results
+        return results
 
+    except Exception as e:
+        print(
+            f"ERROR loading eBay page: {e}"
+        )
 
-# -----------------------------
-# MAIN
-# -----------------------------
+        return []
+
 
 async def main():
 
@@ -178,47 +263,49 @@ async def main():
             headless=True
         )
 
-        page = await browser.new_page(
+        context = await browser.new_context(
             viewport={
                 "width": 1440,
                 "height": 1000
             },
+
             user_agent=(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "Mozilla/5.0 (X11; Linux x86_64) "
                 "AppleWebKit/537.36 "
                 "(KHTML, like Gecko) "
                 "Chrome/131.0.0.0 Safari/537.36"
-            )
+            ),
+
+            locale="en-US",
+
+            extra_http_headers={
+                "Accept-Language":
+                    "en-US,en;q=0.9"
+            }
         )
+
+        page = await context.new_page()
 
         for query in SEARCH_QUERIES:
 
-            try:
-                results = await scrape_query(
-                    page,
-                    query
-                )
+            results = await scrape_query(
+                page,
+                query
+            )
 
-                all_results.extend(results)
+            all_results.extend(results)
 
-                # Small delay between searches
-                await page.wait_for_timeout(2000)
-
-            except Exception as e:
-
-                print(
-                    f"ERROR searching '{query}': {e}"
-                )
+            await page.wait_for_timeout(
+                3000
+            )
 
         await browser.close()
 
-    # -------------------------
-    # SAVE SNAPSHOT
-    # -------------------------
-
     timestamp = datetime.now(
         timezone.utc
-    ).strftime("%Y-%m-%d_%H-%M-%S")
+    ).strftime(
+        "%Y-%m-%d_%H-%M-%S"
+    )
 
     output_file = (
         OUTPUT_DIR /
