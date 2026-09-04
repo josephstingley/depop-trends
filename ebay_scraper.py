@@ -1,11 +1,11 @@
-import asyncio
 import json
-import re
+import os
+import time
+import base64
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import quote_plus
 
-from playwright.async_api import async_playwright
+import requests
 
 
 SEARCH_QUERIES = [
@@ -17,289 +17,141 @@ SEARCH_QUERIES = [
 ]
 
 OUTPUT_DIR = Path("data/ebay_history")
-DEBUG_DIR = Path("data/ebay_debug")
-
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-DEBUG_DIR.mkdir(parents=True, exist_ok=True)
+
+EBAY_API_URL = "https://api.ebay.com"
+EBAY_TOKEN_URL = "https://api.ebay.com/identity/v1/oauth2/token"
 
 
-def clean_text(value):
-    if not value:
-        return None
-    return re.sub(r"\s+", " ", value).strip()
+def get_access_token():
+    app_id = os.environ.get("EBAY_APP_ID")
+    cert_id = os.environ.get("EBAY_CERT_ID")
 
+    if not app_id or not cert_id:
+        raise RuntimeError(
+            "Missing EBAY_APP_ID or EBAY_CERT_ID GitHub secrets."
+        )
 
-def parse_price(value):
-    if not value:
-        return None
+    credentials = f"{app_id}:{cert_id}"
+    encoded_credentials = base64.b64encode(
+        credentials.encode()
+    ).decode()
 
-    match = re.search(r"[\d,]+(?:\.\d{1,2})?", value)
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": f"Basic {encoded_credentials}",
+    }
 
-    if not match:
-        return None
+    data = {
+        "grant_type": "client_credentials",
+        "scope": "https://api.ebay.com/oauth/api_scope",
+    }
 
-    try:
-        return float(match.group(0).replace(",", ""))
-    except ValueError:
-        return None
-
-
-async def scrape_query(page, query):
-    print(f"\nSearching eBay for: {query}")
-
-    url = (
-        "https://www.ebay.com/sch/i.html"
-        f"?_nkw={quote_plus(query)}"
-        "&LH_Sold=1"
-        "&LH_Complete=1"
-        "&_sop=13"
-        "&_ipg=120"
+    response = requests.post(
+        EBAY_TOKEN_URL,
+        headers=headers,
+        data=data,
+        timeout=30,
     )
 
-    try:
-        response = await page.goto(
-            url,
-            wait_until="domcontentloaded",
-            timeout=60000
+    if response.status_code != 200:
+        raise RuntimeError(
+            f"eBay OAuth failed: "
+            f"{response.status_code} {response.text}"
         )
 
-        await page.wait_for_timeout(5000)
+    return response.json()["access_token"]
 
-        print(f"HTTP status: {response.status if response else 'unknown'}")
-        print(f"Page title: {await page.title()}")
-        print(f"Final URL: {page.url}")
 
-        # Save the actual HTML eBay gave us.
-        safe_name = re.sub(
-            r"[^a-zA-Z0-9_-]",
-            "_",
-            query
-        )
+def search_ebay(access_token, query):
+    url = f"{EBAY_API_URL}/buy/browse/v1/item_summary/search"
 
-        html_file = DEBUG_DIR / f"{safe_name}.html"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
+        "Accept": "application/json",
+    }
 
-        html = await page.content()
+    params = {
+        "q": query,
+        "limit": 200,
+    }
 
-        html_file.write_text(
-            html,
-            encoding="utf-8"
-        )
+    response = requests.get(
+        url,
+        headers=headers,
+        params=params,
+        timeout=30,
+    )
 
-        print(f"Saved debug HTML: {html_file}")
-
-        # Look for common eBay result selectors.
-        selectors = [
-            "li.s-item",
-            ".s-item",
-            "[data-testid='item-card']",
-            ".srp-results .s-item",
-            "ul.srp-results > li"
-        ]
-
-        for selector in selectors:
-            count = await page.locator(selector).count()
-            print(
-                f"Selector {selector}: {count} elements"
-            )
-
-        # Try the standard eBay result selector first.
-        cards = page.locator("li.s-item")
-
-        count = await cards.count()
-
-        # Fallback selector.
-        if count == 0:
-            cards = page.locator(".s-item")
-            count = await cards.count()
-
-        print(f"Using {count} result cards")
-
-        results = []
-
-        for i in range(count):
-
-            try:
-                card = cards.nth(i)
-
-                title = None
-                price_text = None
-                link = None
-                condition = None
-
-                # Title
-                for selector in [
-                    ".s-item__title",
-                    "[role='heading']",
-                    "h3"
-                ]:
-                    locator = card.locator(selector)
-
-                    if await locator.count():
-                        title = clean_text(
-                            await locator.first.inner_text()
-                        )
-
-                        if title:
-                            break
-
-                # Price
-                for selector in [
-                    ".s-item__price",
-                    "[class*='price']"
-                ]:
-                    locator = card.locator(selector)
-
-                    if await locator.count():
-                        price_text = clean_text(
-                            await locator.first.inner_text()
-                        )
-
-                        if price_text:
-                            break
-
-                # Link
-                for selector in [
-                    "a.s-item__link",
-                    "a"
-                ]:
-                    locator = card.locator(selector)
-
-                    if await locator.count():
-                        link = await locator.first.get_attribute(
-                            "href"
-                        )
-
-                        if link:
-                            break
-
-                # Condition
-                for selector in [
-                    ".SECONDARY_INFO",
-                    ".s-item__subtitle"
-                ]:
-                    locator = card.locator(selector)
-
-                    if await locator.count():
-                        condition = clean_text(
-                            await locator.first.inner_text()
-                        )
-
-                        if condition:
-                            break
-
-                if not title:
-                    continue
-
-                if title.lower() in [
-                    "shop on ebay",
-                    "shop on ebay.com"
-                ]:
-                    continue
-
-                item_id = None
-
-                if link:
-                    match = re.search(
-                        r"/itm/(?:[^/]+/)?(\d+)",
-                        link
-                    )
-
-                    if match:
-                        item_id = match.group(1)
-
-                results.append({
-                    "item_id": item_id,
-                    "title": title,
-                    "price": parse_price(price_text),
-                    "price_raw": price_text,
-                    "condition": condition,
-                    "url": link,
-                    "query": query,
-                    "scraped_at": datetime.now(
-                        timezone.utc
-                    ).isoformat()
-                })
-
-            except Exception as e:
-                print(
-                    f"Error parsing result {i}: {e}"
-                )
-
-        # Remove duplicates.
-        unique = {}
-
-        for item in results:
-            key = (
-                item["item_id"]
-                or item["url"]
-                or item["title"]
-            )
-
-            unique[key] = item
-
-        results = list(unique.values())
-
+    if response.status_code != 200:
         print(
-            f"Successfully extracted {len(results)} listings"
+            f"eBay search failed for {query}: "
+            f"{response.status_code}"
         )
-
-        return results
-
-    except Exception as e:
-        print(
-            f"ERROR loading eBay page: {e}"
-        )
-
+        print(response.text)
         return []
 
+    data = response.json()
 
-async def main():
+    results = []
+
+    for item in data.get("itemSummaries", []):
+
+        price = item.get("price", {})
+
+        results.append({
+            "item_id": item.get("itemId"),
+            "title": item.get("title"),
+            "price": price.get("value"),
+            "currency": price.get("currency"),
+            "condition": item.get("condition"),
+            "url": item.get("itemWebUrl"),
+            "image_url": (
+                item.get("image", {})
+                .get("imageUrl")
+            ),
+            "seller": (
+                item.get("seller", {})
+                .get("username")
+            ),
+            "query": query,
+            "scraped_at": datetime.now(
+                timezone.utc
+            ).isoformat(),
+        })
+
+    return results
+
+
+def main():
+
+    print("-----------------------------")
+    print("eBay API scraper starting")
+    print("-----------------------------")
+
+    access_token = get_access_token()
+
+    print("Successfully authenticated with eBay.")
 
     all_results = []
 
-    async with async_playwright() as p:
+    for query in SEARCH_QUERIES:
 
-        browser = await p.chromium.launch(
-            headless=True
+        print(f"\nSearching: {query}")
+
+        results = search_ebay(
+            access_token,
+            query
         )
 
-        context = await browser.new_context(
-            viewport={
-                "width": 1440,
-                "height": 1000
-            },
-
-            user_agent=(
-                "Mozilla/5.0 (X11; Linux x86_64) "
-                "AppleWebKit/537.36 "
-                "(KHTML, like Gecko) "
-                "Chrome/131.0.0.0 Safari/537.36"
-            ),
-
-            locale="en-US",
-
-            extra_http_headers={
-                "Accept-Language":
-                    "en-US,en;q=0.9"
-            }
+        print(
+            f"Found {len(results)} listings"
         )
 
-        page = await context.new_page()
+        all_results.extend(results)
 
-        for query in SEARCH_QUERIES:
-
-            results = await scrape_query(
-                page,
-                query
-            )
-
-            all_results.extend(results)
-
-            await page.wait_for_timeout(
-                3000
-            )
-
-        await browser.close()
+        time.sleep(1)
 
     timestamp = datetime.now(
         timezone.utc
@@ -326,7 +178,7 @@ async def main():
         )
 
     print("\n-----------------------------")
-    print("eBay scrape complete")
+    print("eBay API scrape complete")
     print("-----------------------------")
     print(
         f"Total listings: {len(all_results)}"
@@ -337,4 +189,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
