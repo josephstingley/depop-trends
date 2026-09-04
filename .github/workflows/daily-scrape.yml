@@ -36,12 +36,12 @@ jobs:
             --capture-network
 
       - name: Run eBay scraper
-  env:
-    EBAY_APP_ID: ${{ secrets.EBAY_APP_ID }}
-    EBAY_DEV_ID: ${{ secrets.EBAY_DEV_ID }}
-    EBAY_CERT_ID: ${{ secrets.EBAY_CERT_ID }}
-  run: |
-    python3 ebay_scraper.py
+        env:
+          EBAY_APP_ID: ${{ secrets.EBAY_APP_ID }}
+          EBAY_DEV_ID: ${{ secrets.EBAY_DEV_ID }}
+          EBAY_CERT_ID: ${{ secrets.EBAY_CERT_ID }}
+        run: |
+          python3 ebay_scraper.py
 
       - name: Commit updated results
         run: |
