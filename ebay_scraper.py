@@ -33,9 +33,10 @@ def get_access_token():
         )
 
     credentials = f"{app_id}:{cert_id}"
+
     encoded_credentials = base64.b64encode(
-        credentials.encode()
-    ).decode()
+        credentials.encode("utf-8")
+    ).decode("utf-8")
 
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -97,7 +98,6 @@ def search_ebay(access_token, query):
     results = []
 
     for item in data.get("itemSummaries", []):
-
         price = item.get("price", {})
 
         results.append({
