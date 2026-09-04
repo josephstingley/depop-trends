@@ -24,7 +24,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install playwright
+          pip install playwright requests
           playwright install --with-deps chromium
 
       - name: Run Depop scraper
